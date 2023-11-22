@@ -10,7 +10,9 @@ RUN apt-get update && \
     dovecot-pop3d \
     dovecot-sqlite \
     supervisor \
-    sqlite3
+    sqlite3 \
+    nginx \
+    certbot
 
 # Add dovecot to the mail group
 RUN adduser dovecot mail
