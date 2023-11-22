@@ -1,0 +1,42 @@
+smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
+biff = no
+
+append_dot_mydomain = no
+
+readme_directory = no
+
+compatibility_level = 3.6
+
+smtpd_tls_cert_file=/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.privacyroot.org/mail.privacyroot.org.crt
+smtpd_tls_key_file=/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.privacyroot.org/mail.privacyroot.org.key
+smtpd_tls_security_level=may
+
+smtp_tls_CApath=/etc/ssl/certs
+smtp_tls_security_level=may
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+myhostname = mail.privacyroot.org
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = /etc/mailname
+mydestination = 
+relayhost = 
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = all
+home_mailbox = /var/mail/Maildir/
+message_size_limit = 52428800
+
+virtual_mailbox_domains = sqlite:/etc/postfix/sqlite_virtual_domains_maps.cf
+virtual_mailbox_maps = sqlite:/etc/postfix/sqlite_virtual_mailbox_maps.cf
+virtual_alias_maps = sqlite:/etc/postfix/sqlite_virtual_alias_maps.cf
+
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_auth_enable = yes
+broken_sasl_auth_clients = yes
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+smtputf8_enable = no

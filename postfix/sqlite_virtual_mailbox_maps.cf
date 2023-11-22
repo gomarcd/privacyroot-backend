@@ -1,0 +1,2 @@
+dbpath = /var/mail/database/mailserver.db
+query = SELECT 1 FROM mailbox WHERE username || '@' || domain = '%s';
