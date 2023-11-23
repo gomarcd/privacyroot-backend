@@ -55,5 +55,30 @@ fi
 # Register the hostname (ie, mail.example.com) and any other subdomains (ie, imap.example.com)
 certbot certonly --nginx --staging --non-interactive --agree-tos --email admin@$DOMAIN -d $(echo "$SUBDOMAINS" | sed 's/,/ -d /g')
 
+# Reference the certificate and private key paths
+CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
+KEY_PATH="/etc/letsencrypt/live/$HOSTNAME/privkey.pem"
+
+# Update Dovecot configuration files with the cert and key paths
+
+DOVE_10SSL="/etc/dovecot/conf.d/10-ssl.conf"
+if [ ! -f "$DOVE_10SSL" ]; then
+    touch "$DOVE_10SSL"
+fi
+
+# Set the paths in the dovecot configuration if not already set
+if ! grep -q "ssl_cert =" "$DOVE_10SSL"; then
+    echo "ssl_cert = <$CERT_PATH" >> "$DOVE_10SSL"
+fi
+
+if ! grep -q "ssl_key =" "$DOVE_10SSL"; then
+    echo "ssl_key = <$KEY_PATH" >> "$DOVE_10SSL"
+fi
+
+# Set the other values in the dovecot configuration if not already set
+if ! grep -q "ssl =" "$DOVE_10SSL"; then
+    echo "ssl = required" >> "$DOVE_10SSL"
+fi
+
 # Start supervisord
 exec supervisord -c /etc/supervisord.conf
