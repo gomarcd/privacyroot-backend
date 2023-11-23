@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  mailserver:
+    image: gomarcd/privacyroot:latest
+    container_name: privacyroot
+    hostname: mail.privatenode.xyz
+    # If you don't want to use host mode, comment it out and uncomment out and adjust ports
+    network_mode: host
+    #ports:
+    #  - 80:80
+    #  - 443:443
+    #  - 587:587
+    #  - 465:465
+    #  - 143:143
+    #  - 993:993
+    #  - 110:110
+    #  - 995:995
+    #  - 25:25
+    restart: always
