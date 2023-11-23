@@ -12,7 +12,7 @@ RUN apt-get update && \
     supervisor \
     sqlite3 \
     nginx \
-    certbot
+    certbot python3-certbot-nginx
 
 # Add dovecot to the mail group
 RUN adduser dovecot mail
@@ -24,7 +24,6 @@ COPY dovecot/conf.d/10-auth.conf /etc/dovecot/conf.d/10-auth.conf
 COPY dovecot/conf.d/10-mail.conf /etc/dovecot/conf.d/10-mail.conf
 COPY dovecot/conf.d/10-mailcrypt.conf /etc/dovecot/conf.d/10-mailcrypt.conf
 COPY dovecot/conf.d/10-master.conf /etc/dovecot/conf.d/10-master.conf
-COPY dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/10-ssl.conf
 COPY dovecot/conf.d/15-mailboxes.conf /etc/dovecot/conf.d/15-mailboxes.conf
 COPY dovecot/dovecot-sql.conf /etc/dovecot/dovecot-sql.conf
 COPY dovecot/dovecot.conf /etc/dovecot/dovecot.conf
