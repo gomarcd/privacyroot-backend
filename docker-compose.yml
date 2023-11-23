@@ -18,3 +18,6 @@ services:
     #  - 995:995
     #  - 25:25
     restart: always
+    environment:
+      - domain=privatenode.xyz
+      - cname=imap,imaps,smtp,smtps,pop3,pop3s
