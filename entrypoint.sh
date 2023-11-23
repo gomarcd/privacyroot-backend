@@ -48,12 +48,12 @@ if [ -n "$CNAME" ]; then
   # Append the main domain to each subdomain
   SUBDOMAINS=$(echo "$CNAME" | sed "s/\([^,]\+\)/\1.$DOMAIN/g")
 else
-  # Use only the main domain if cname is not set
+  # Use only the hostname if cname is not set
   SUBDOMAINS="$HOSTNAME"
 fi
 
 # Register the hostname (ie, mail.example.com) and any other subdomains (ie, imap.example.com)
-certbot certonly --nginx --staging --non-interactive --agree-tos --email admin@$DOMAIN -d $(echo "$SUBDOMAINS")
+certbot certonly --nginx --staging --non-interactive --agree-tos --email admin@$DOMAIN -d "$SUBDOMAINS"
 
 # Reference the certificate and private key paths
 CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
