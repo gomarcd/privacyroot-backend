@@ -5,6 +5,15 @@ HOSTNAME=$(hostname)
 
 echo "Hostname set to: $HOSTNAME"
 
+# Extract domain from hostname
+DOMAIN=$(echo "$HOSTNAME" | awk -F'.' '{if (NF > 1) {print $(NF-1)"."$NF} else {print $0}}')
+
+# Update /etc/mailname
+echo "$DOMAIN" > /etc/mailname
+
+# Update /etc/mailname
+echo "$DOMAIN" > /etc/mailname
+
 # Update postfix main.cf
 sed -i "s/myhostname =.*/myhostname = $HOSTNAME/" /etc/postfix/main.cf
 
