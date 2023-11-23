@@ -51,5 +51,16 @@ RUN chmod 644 \
 # Create log file
 RUN touch /var/log/mail.log && chmod a+w /var/log/mail*
 
+EXPOSE 80 443 587 465 143 993 110 995 25
+
+# Copy the entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+
+# Set the entrypoint script as executable
+RUN chmod +x /entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
+
 # Start Supervisor
-CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+#CMD ["supervisord", "-c", "/etc/supervisord.conf"]
