@@ -53,7 +53,7 @@ else
 fi
 
 # Register the hostname (ie, mail.example.com) and any other subdomains (ie, imap.example.com)
-certbot certonly --nginx --staging --non-interactive --agree-tos --email admin@$DOMAIN -d $(echo "$SUBDOMAINS" | sed 's/,/ -d /g')
+certbot certonly --nginx --staging --non-interactive --agree-tos --email admin@$DOMAIN -d $(echo "$SUBDOMAINS")
 
 # Reference the certificate and private key paths
 CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
