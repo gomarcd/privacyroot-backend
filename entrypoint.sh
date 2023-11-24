@@ -91,30 +91,21 @@ fi
 echo "Registering Let's Encrypt account under admin@$DOMAIN..."
 certbot certonly --nginx --staging --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAINS"
 
+# Certbot stared nginx, stop it and let Supervisor manage nginx process
+service nginx stop
+
 # Reference the certificate and private key paths
 CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
 KEY_PATH="/etc/letsencrypt/live/$HOSTNAME/privkey.pem"
 
-# Update Dovecot configuration files with the cert and key paths
-
+# Update Dovecot configuration files with the certificate paths
 DOVE_10SSL="/etc/dovecot/conf.d/10-ssl.conf"
-if [ ! -f "$DOVE_10SSL" ]; then
-    touch "$DOVE_10SSL"
-fi
 
-# Set the paths in the dovecot configuration if not already set
-if ! grep -q "ssl_cert =" "$DOVE_10SSL"; then
-    echo "ssl_cert = <$CERT_PATH" >> "$DOVE_10SSL"
-fi
-
-if ! grep -q "ssl_key =" "$DOVE_10SSL"; then
-    echo "ssl_key = <$KEY_PATH" >> "$DOVE_10SSL"
-fi
-
-# Set the other values in the dovecot configuration if not already set
-if ! grep -q "ssl =" "$DOVE_10SSL"; then
-    echo "ssl = required" >> "$DOVE_10SSL"
-fi
+# Overwrite or set the paths in the dovecot configuration
+sed -i -e "/^ssl_cert /s|=.*$|= <$CERT_PATH|" \
+       -e "/^ssl_key /s|=.*$|= <$KEY_PATH|" \
+       -e "/^ssl /s|=.*$|= required|" \
+       "$DOVE_10SSL"
 
 # Start supervisord
 exec supervisord -c /etc/supervisord.conf
