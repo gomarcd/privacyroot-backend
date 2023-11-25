@@ -21,8 +21,8 @@ echo "Domain set to: $DOMAIN"
 # Update /etc/mailname
 echo "$DOMAIN" > /etc/mailname
 
-# Update postfix main.cf
-sed -i "s/myhostname =.*/myhostname = $HOSTNAME/" /etc/postfix/main.cf
+# Set hostname in /etc/postfix/main.cf
+grep -q '^\s*#*\s*myhostname =' /etc/postfix/main.cf && sed -i '/^\s*#*\s*myhostname =/s~.*~myhostname = '"$HOSTNAME~" /etc/postfix/main.cf || echo 'myhostname = '"$HOSTNAME" >> /etc/postfix/main.cf
 
 # Check if database exists, if not, create it
 if [ ! -f "$DATABASE_PATH" ]; then
@@ -52,8 +52,10 @@ else
     echo "Database already exists. Continuing..."
 fi
 
+# CONFIGURE DOVECOT
+echo "Configuring Dovecot for SQLite..."
+
 # Add /etc/dovecot/dovecot-sql.conf configuration
-echo "Configuring Dovecot for use with database..."
 echo "Writing to /etc/dovecot/dovecot-sql.conf..."
 touch /etc/dovecot/dovecot-sql.conf
 echo "driver = sqlite
@@ -63,10 +65,11 @@ password_query = SELECT password, crypt AS userdb_mail_crypt_save_version, \
 password AS userdb_mail_crypt_private_password, username, domain \
 FROM mailbox WHERE username = '%n';" > /etc/dovecot/dovecot-sql.conf
 
-echo "Dovecot configured."
+# CONFIGURE POSTFIX
+
+echo "Configuring Postfix for SQLite..."
 
 # Create or overwrite /etc/postfix/sqlite_virtual_domains_maps.cf
-echo "Configuring Postfix for use with database..."
 echo "Writing to /etc/postfix/sqlite_virtual_domains_maps.cf..."
 echo "dbpath = $DATABASE_PATH
 query = SELECT 1 FROM virtual_domains WHERE domain='%s'" > /etc/postfix/sqlite_virtual_domains_maps.cf
@@ -81,15 +84,15 @@ echo "Writing to sqlite_virtual_alias_maps.cf..."
 echo "dbpath = $DATABASE_PATH
 query = SELECT destination FROM virtual_aliases WHERE source='%s'" > /etc/postfix/sqlite_virtual_alias_maps.cf
 
-echo "Postfix configured."
-
-# Function to check if a domain has a DNS record to avoid certbot failure
+# Check if domain has a DNS record to avoid certbot failure
+echo "Checking for DNS records..."
 check_dns() {
   local result=$(dig "$1" | awk '/^;; ANSWER SECTION:/{p=1; next} p{print; exit}')
   if [ -n "$result" ]; then
+  	echo "OK, found a valid DNS record for $1."
     return 0  # Success, domain has a DNS record
   else
-    echo "Domain $1 does not have a DNS record. Skipping..."
+    echo "NO DNS RECORD FOUND for $1. Skipping..."
     return 1  # Failure, domain does not have a DNS record
   fi
 }
@@ -125,7 +128,7 @@ fi
 echo "Registering Let's Encrypt account under admin@$DOMAIN..."
 certbot certonly --nginx --staging --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAINS"
 
-# Certbot stared nginx, stop it and let Supervisor manage nginx process
+# Certbot started nginx, stop it and let Supervisor manage nginx process
 service nginx stop
 
 # Reference the certificate and private key paths
@@ -133,8 +136,7 @@ CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
 KEY_PATH="/etc/letsencrypt/live/$HOSTNAME/privkey.pem"
 
 # Update Dovecot configuration files with the cert and key paths
-
-echo "Updating Dovecot configuration..."
+echo "Updating Dovecot configuration with TLS certs..."
 echo "Making backup of /etc/dovecot/conf.d/10-ssl.conf to /etc/dovecot/conf.d/10-ssl.bak"
 cp /etc/dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/10-ssl.bak
 
