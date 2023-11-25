@@ -7,16 +7,16 @@ readme_directory = no
 
 compatibility_level = 3.6
 
-smtpd_tls_cert_file=/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.privacyroot.org/mail.privacyroot.org.crt
-smtpd_tls_key_file=/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.privacyroot.org/mail.privacyroot.org.key
-smtpd_tls_security_level=may
+smtpd_tls_cert_file = 
+smtpd_tls_key_file = 
+smtpd_tls_security_level = may
 
 smtp_tls_CApath=/etc/ssl/certs
-smtp_tls_security_level=may
+smtp_tls_security_level = may
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
 smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
-myhostname = mail.privacyroot.org
+myhostname =
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 myorigin = /etc/mailname
