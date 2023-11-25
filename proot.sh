@@ -14,8 +14,8 @@ print_help() {
 
 username=""
 password=""
-domain=$domain
-database_path=$database_path
+domain=$DOMAIN
+database_path=$DATABASE_PATH
 add_user=false
 
 while [ "$#" -gt 0 ]; do

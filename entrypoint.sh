@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Read hostname from Docker -h option and domain/cname from -e flags
-HOSTNAME=$(HOSTNAME)
+HOSTNAME=$(hostname)
 DOMAIN=$DOMAIN
 CNAME=$CNAME
 
@@ -52,8 +52,9 @@ else
     echo "Database already exists. Continuing..."
 fi
 
+# Add /etc/dovecot/dovecot-sql.conf configuration
 echo "Configuring Dovecot for use with database..."
-
+echo "Writing to /etc/dovecot/dovecot-sql.conf..."
 touch /etc/dovecot/dovecot-sql.conf
 echo "driver = sqlite
 connect = $DATABASE_PATH
@@ -61,6 +62,26 @@ connect = $DATABASE_PATH
 password_query = SELECT password, crypt AS userdb_mail_crypt_save_version, \
 password AS userdb_mail_crypt_private_password, username, domain \
 FROM mailbox WHERE username = '%n';" > /etc/dovecot/dovecot-sql.conf
+
+echo "Dovecot configured."
+
+# Create or overwrite /etc/postfix/sqlite_virtual_domains_maps.cf
+echo "Configuring Postfix for use with database..."
+echo "Writing to /etc/postfix/sqlite_virtual_domains_maps.cf..."
+echo "dbpath = $DATABASE_PATH
+query = SELECT 1 FROM virtual_domains WHERE domain='%s'" > /etc/postfix/sqlite_virtual_domains_maps.cf
+
+# Create or overwrite /etc/postfix/sqlite_virtual_mailbox_maps.cf
+echo "Writing to sqlite_virtual_mailbox_maps.cf..."
+echo "dbpath = $DATABASE_PATH
+query = SELECT 1 FROM mailbox WHERE username || '@' || domain = '%s';" > /etc/postfix/sqlite_virtual_mailbox_maps.cf
+
+# Create or overwrite /etc/postfix/sqlite_virtual_alias_maps.cf
+echo "Writing to sqlite_virtual_alias_maps.cf..."
+echo "dbpath = $DATABASE_PATH
+query = SELECT destination FROM virtual_aliases WHERE source='%s'" > /etc/postfix/sqlite_virtual_alias_maps.cf
+
+echo "Postfix configured."
 
 # Function to check if a domain has a DNS record to avoid certbot failure
 check_dns() {
