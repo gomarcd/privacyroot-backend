@@ -5,12 +5,16 @@ HOSTNAME=$(hostname)
 DOMAIN=$domain
 CNAME=$cname
 
+# Get database path
+DATABASE_PATH=$database_path
+
 # Check if $HOSTNAME and $DOMAIN are provided
 if [ -z "$HOSTNAME" ] || [ -z "$DOMAIN" ]; then
   echo "Error: Both HOSTNAME and DOMAIN must be provided. Check your docker run command or docker compose yaml."
   exit 1
 fi
 
+echo "Database path is: $DATABASE_PATH"
 echo "Hostname set to: $HOSTNAME"
 echo "Domain set to: $DOMAIN"
 
@@ -21,10 +25,9 @@ echo "$DOMAIN" > /etc/mailname
 sed -i "s/myhostname =.*/myhostname = $HOSTNAME/" /etc/postfix/main.cf
 
 # Check if database exists, if not, create it
-if [ ! -f "/var/mail/database/mailserver.db" ]; then
+if [ ! -f "$DATABASE_PATH" ]; then
     echo "Creating database..."
-    mkdir -p /var/mail/database/
-    sqlite3 /var/mail/database/mailserver.db <<EOF
+    sqlite3 $DATABASE_PATH <<EOF
 CREATE TABLE mailbox (
     username varchar(255) NOT NULL,
     password varchar(255) NOT NULL,
@@ -118,6 +121,13 @@ grep -q '^\s*#*\s*ssl_key =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\
 
 echo "Setting ssl_min_protocol = TLSv1.2..."
 grep -q '^\s*#*\s*ssl_min_protocol =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_min_protocol =/s~.*~ssl_min_protocol = TLSv1.2~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_min_protocol = TLSv1.2" >> /etc/dovecot/conf.d/10-ssl.conf
+
+echo "Updating ssl configuration..."
+echo "Making backup of /etc/ssl/openssl.cnf..."
+cp /etc/ssl/openssl.cnf /etc/ssl/openssl.bak
+
+echo "Commenting out providers = provider_sect due to known issue..."
+sed -i '/^\s*providers = provider_sect/s/^/#/' /etc/ssl/openssl.cnf
 
 # Start supervisord
 exec supervisord -c /etc/supervisord.conf

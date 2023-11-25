@@ -12,10 +12,13 @@ RUN apt-get update && \
     supervisor \
     sqlite3 \
     nginx \
-    certbot python3-certbot-nginx
+    certbot python3-certbot-nginx dnsutils nano
 
 # Add dovecot to the mail group
 RUN adduser dovecot mail
+
+# Set environment variables
+ENV DATABASE_PATH=/var/mail/mailserver.db
 
 # Copy configuration files
 COPY supervisord.conf /etc/supervisord.conf
@@ -34,7 +37,7 @@ COPY postfix/sqlite_virtual_domains_maps.cf /etc/postfix/sqlite_virtual_domains_
 COPY postfix/sqlite_virtual_mailbox_maps.cf /etc/postfix/sqlite_virtual_mailbox_maps.cf
 
 # Copy database
-COPY mailserver.db /var/mail/database/mailserver.db
+COPY mailserver.db $DATABASE_PATH
 
 # Configure Postfix to use Maildir
 RUN postconf -e 'home_mailbox = /var/mail/Maildir/'
