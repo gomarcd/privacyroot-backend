@@ -29,6 +29,7 @@ RUN chmod +x /usr/local/bin/proot
 
 # Copy postfix-wkd script
 COPY postfix-wkd.py /var/mail/postfix-wkd.py
+RUN chmox +x /var/mail/postfix-wkd.py
 
 # Copy configuration files
 COPY supervisord.conf /etc/supervisord.conf
