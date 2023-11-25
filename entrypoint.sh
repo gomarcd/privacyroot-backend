@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Read hostname from Docker -h option and domain/cname from -e flags
-HOSTNAME=$(hostname)
-DOMAIN=$domain
-CNAME=$cname
+HOSTNAME=$(HOSTNAME)
+DOMAIN=$DOMAIN
+CNAME=$CNAME
 
 # Get database path
-DATABASE_PATH=$database_path
+DATABASE_PATH=$DATABASE_PATH
 
 # Check if $HOSTNAME and $DOMAIN are provided
 if [ -z "$HOSTNAME" ] || [ -z "$DOMAIN" ]; then
@@ -51,6 +51,16 @@ EOF
 else
     echo "Database already exists. Continuing..."
 fi
+
+echo "Configuring Dovecot for use with database..."
+
+touch /etc/dovecot/dovecot-sql.conf
+echo "driver = sqlite
+connect = $DATABASE_PATH
+
+password_query = SELECT password, crypt AS userdb_mail_crypt_save_version, \
+password AS userdb_mail_crypt_private_password, username, domain \
+FROM mailbox WHERE username = '%n';" > /etc/dovecot/dovecot-sql.conf
 
 # Function to check if a domain has a DNS record to avoid certbot failure
 check_dns() {

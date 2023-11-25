@@ -28,7 +28,6 @@ COPY dovecot/conf.d/10-mail.conf /etc/dovecot/conf.d/10-mail.conf
 COPY dovecot/conf.d/10-mailcrypt.conf /etc/dovecot/conf.d/10-mailcrypt.conf
 COPY dovecot/conf.d/10-master.conf /etc/dovecot/conf.d/10-master.conf
 COPY dovecot/conf.d/15-mailboxes.conf /etc/dovecot/conf.d/15-mailboxes.conf
-COPY dovecot/dovecot-sql.conf /etc/dovecot/dovecot-sql.conf
 COPY dovecot/dovecot.conf /etc/dovecot/dovecot.conf
 COPY postfix/main.cf /etc/postfix/main.cf
 COPY postfix/master.cf /etc/postfix/master.cf

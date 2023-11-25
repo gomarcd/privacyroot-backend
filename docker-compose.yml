@@ -19,5 +19,5 @@ services:
     #  - 25:25
     restart: always
     environment:
-      - domain=privatenode.xyz
-      - cname=imap,imaps,smtp,smtps,pop3,pop3s
+      - DOMAIN=privatenode.xyz
+      - CNAME=imap,imaps,smtp,smtps,pop3,pop3s
