@@ -98,14 +98,26 @@ service nginx stop
 CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
 KEY_PATH="/etc/letsencrypt/live/$HOSTNAME/privkey.pem"
 
-# Update Dovecot configuration files with the certificate paths
-DOVE_10SSL="/etc/dovecot/conf.d/10-ssl.conf"
+# Update Dovecot configuration files with the cert and key paths
 
-# Overwrite or set the paths in the dovecot configuration
-sed -i -e "/^ssl_cert /s|=.*$|= <$CERT_PATH|" \
-       -e "/^ssl_key /s|=.*$|= <$KEY_PATH|" \
-       -e "/^ssl /s|=.*$|= required|" \
-       "$DOVE_10SSL"
+echo "Updating Dovecot configuration..."
+echo "Making backup of /etc/dovecot/conf.d/10-ssl.conf to /etc/dovecot/conf.d/10-ssl.bak"
+cp /etc/dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/10-ssl.bak
+
+echo "Setting ssl = required..."
+grep -q '^\s*#*\s*ssl =' /etc/dovecot/conf.d/10-ssl.conf && sed -i '/^\s*#*\s*ssl =/s/.*/ssl = required/' /etc/dovecot/conf.d/10-ssl.conf || echo 'ssl = required' >> /etc/dovecot/conf.d/10-ssl.conf
+
+echo "Setting ssl_prefer_server_ciphers = yes..."
+grep -q '^\s*#*\s*ssl_prefer_server_ciphers =' /etc/dovecot/conf.d/10-ssl.conf && sed -i '/^\s*#*\s*ssl_prefer_server_ciphers =/s/.*/ssl_prefer_server_ciphers = yes/' /etc/dovecot/conf.d/10-ssl.conf || echo 'ssl_prefer_server_ciphers = yes' >> /etc/dovecot/conf.d/10-ssl.conf
+
+echo "Setting ssl_cert path..."
+grep -q '^\s*#*\s*ssl_cert =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_cert =/s~.*~ssl_cert = $CERT_PATH~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_cert = $CERT_PATH" >> /etc/dovecot/conf.d/10-ssl.conf
+
+echo "Setting ssl_key path..."
+grep -q '^\s*#*\s*ssl_key =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_key =/s~.*~ssl_key = $KEY_PATH~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_key = $KEY_PATH" >> /etc/dovecot/conf.d/10-ssl.conf
+
+echo "Setting ssl_min_protocol = TLSv1.2..."
+grep -q '^\s*#*\s*ssl_min_protocol =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_min_protocol =/s~.*~ssl_min_protocol = TLSv1.2~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_min_protocol = TLSv1.2" >> /etc/dovecot/conf.d/10-ssl.conf
 
 # Start supervisord
 exec supervisord -c /etc/supervisord.conf
