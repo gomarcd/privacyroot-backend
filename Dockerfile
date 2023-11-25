@@ -27,6 +27,9 @@ ENV DATABASE_PATH=/var/mail/mailserver.db
 COPY proot.sh /usr/local/bin/proot
 RUN chmod +x /usr/local/bin/proot
 
+# Copy postfix-wkd script
+COPY postfix-wkd.py /var/mail/postfix-wkd.py
+
 # Copy configuration files
 COPY supervisord.conf /etc/supervisord.conf
 COPY dovecot/conf.d/10-auth.conf /etc/dovecot/conf.d/10-auth.conf
