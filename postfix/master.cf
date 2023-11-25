@@ -66,8 +66,8 @@ smtps     inet  n       -       y       -       -       smtpd
 #  -o milter_macro_daemon_name=ORIGINATING
 
 filter    unix  -       n       n       -       10      pipe
-  flags=Rq user=md null_sender=
-  argv=/home/md/postfix-wkd.py -f ${sender} -- ${recipient}
+  flags=Rq user=vmail null_sender=
+  argv=/var/mail/postfix-wkd.py -f ${sender} -- ${recipient}
 
 #628       inet  n       -       y       -       -       qmqpd
 pickup    unix  n       -       y       60      1       pickup

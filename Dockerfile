@@ -3,7 +3,7 @@ FROM ubuntu:latest
 # Update package lists and install required packages
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    postfix \
+    postfix postfix-sqlite \
     dovecot-core \
     dovecot-lmtpd \
     dovecot-imapd \
@@ -12,7 +12,7 @@ RUN apt-get update && \
     supervisor \
     sqlite3 \
     nginx \
-    certbot python3-certbot-nginx dnsutils nano argon2
+    certbot python3-certbot-nginx dnsutils nano argon2 gpg
 
 # Set users/groups
 RUN groupadd -g 5000 vmail
