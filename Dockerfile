@@ -29,7 +29,9 @@ RUN chmod +x /usr/local/bin/proot
 
 # Copy postfix-wkd script
 COPY postfix-wkd.py /var/mail/postfix-wkd.py
-RUN chmox +x /var/mail/postfix-wkd.py
+RUN chmod +x /var/mail/postfix-wkd.py
+RUN mkdir /var/mail/.gnupg && echo "auto-key-locate local,wkd" > /var/mail/.gnupg/gpg.conf
+RUN chown -R vmail:vmail /var/mail
 
 # Copy configuration files
 COPY supervisord.conf /etc/supervisord.conf
