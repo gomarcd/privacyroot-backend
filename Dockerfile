@@ -12,10 +12,7 @@ RUN apt-get update && \
     supervisor \
     sqlite3 \
     nginx \
-    certbot python3-certbot-nginx python3-pip dnsutils nano argon2 gpg rsyslog
-
-# Install Python gpg package
-RUN pip3 install python-gnup
+    certbot python3-certbot-nginx python3-gpg dnsutils nano argon2 rsyslog
 
 # Set users/groups
 RUN groupadd -g 5000 vmail
