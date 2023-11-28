@@ -18,6 +18,9 @@ echo "Database path is: $DATABASE_PATH"
 echo "Hostname set to: $HOSTNAME"
 echo "Domain set to: $DOMAIN"
 
+# Ensure Postfix has the needed DNS config
+cp /etc/resolv.conf /var/spool/postfix/etc/
+
 # Update /etc/mailname
 echo "$DOMAIN" > /etc/mailname
 
@@ -45,6 +48,8 @@ CREATE TABLE virtual_aliases (
     source varchar(255) NOT NULL,
     destination varchar(255) NOT NULL
 );
+
+INSERT INTO virtual_domains (domain,aliases,mailboxes) VALUES ('$DOMAIN',0,0);
 EOF
 
     echo "Database created."
