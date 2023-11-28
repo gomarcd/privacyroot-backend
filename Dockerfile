@@ -12,7 +12,10 @@ RUN apt-get update && \
     supervisor \
     sqlite3 \
     nginx \
-    certbot python3-certbot-nginx dnsutils nano argon2 gpg rsyslog
+    certbot python3-certbot-nginx python3-pip dnsutils nano argon2 gpg rsyslog
+
+# Install Python gpg package
+RUN pip3 install python-gnup
 
 # Set users/groups
 RUN groupadd -g 5000 vmail
@@ -44,9 +47,6 @@ COPY dovecot/conf.d/auth-sql.conf.ext /etc/dovecot/conf.d/auth-sql.conf.ext
 COPY dovecot/dovecot.conf /etc/dovecot/dovecot.conf
 COPY postfix/main.cf /etc/postfix/main.cf
 COPY postfix/master.cf /etc/postfix/master.cf
-
-# Copy database
-COPY mailserver.db $DATABASE_PATH
 
 # Configure Postfix to use Maildir
 RUN postconf -e 'home_mailbox = /var/mail/Maildir/'
