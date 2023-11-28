@@ -123,9 +123,11 @@ fi
 
 # Register all domains (main domain and subdomains)
 echo "Registering Let's Encrypt account under admin@$DOMAIN..."
+
+# Staging
 certbot certonly --nginx --staging --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAINS"
 
-# Certbot stared nginx, stop it and let Supervisor manage nginx process
+# Certbot started nginx, stop it and let Supervisor manage nginx process
 service nginx stop
 
 # Reference the certificate and private key paths
@@ -145,10 +147,10 @@ echo "Setting ssl_prefer_server_ciphers = yes..."
 grep -q '^\s*#*\s*ssl_prefer_server_ciphers =' /etc/dovecot/conf.d/10-ssl.conf && sed -i '/^\s*#*\s*ssl_prefer_server_ciphers =/s/.*/ssl_prefer_server_ciphers = yes/' /etc/dovecot/conf.d/10-ssl.conf || echo 'ssl_prefer_server_ciphers = yes' >> /etc/dovecot/conf.d/10-ssl.conf
 
 echo "Setting ssl_cert path..."
-grep -q '^\s*#*\s*ssl_cert =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_cert =/s~.*~ssl_cert = $CERT_PATH~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_cert = $CERT_PATH" >> /etc/dovecot/conf.d/10-ssl.conf
+grep -q '^\s*#*\s*ssl_cert =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_cert =/s~.*~ssl_cert = <$CERT_PATH~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_cert = <$CERT_PATH" >> /etc/dovecot/conf.d/10-ssl.conf
 
 echo "Setting ssl_key path..."
-grep -q '^\s*#*\s*ssl_key =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_key =/s~.*~ssl_key = $KEY_PATH~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_key = $KEY_PATH" >> /etc/dovecot/conf.d/10-ssl.conf
+grep -q '^\s*#*\s*ssl_key =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_key =/s~.*~ssl_key = <$KEY_PATH~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_key = <$KEY_PATH" >> /etc/dovecot/conf.d/10-ssl.conf
 
 echo "Setting ssl_min_protocol = TLSv1.2..."
 grep -q '^\s*#*\s*ssl_min_protocol =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_min_protocol =/s~.*~ssl_min_protocol = TLSv1.2~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_min_protocol = TLSv1.2" >> /etc/dovecot/conf.d/10-ssl.conf
