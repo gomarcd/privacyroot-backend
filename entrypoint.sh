@@ -50,8 +50,15 @@ CREATE TABLE virtual_aliases (
 );
 
 INSERT INTO virtual_domains (domain,aliases,mailboxes) VALUES ('$DOMAIN',0,0);
+
+INSERT INTO virtual_aliases (source,destination) VALUES ('admin@privatenode.xyz','test@privatenode.xyz');
 EOF
 
+    # Add test user
+    echo "Creating test user..."
+    service dovecot start
+    proot -adduser -u test -p test
+    service dovecot stop
     echo "Database created."
 else
     echo "Database already exists. Continuing..."
@@ -89,22 +96,24 @@ query = SELECT destination FROM virtual_aliases WHERE source='%s'" > /etc/postfi
 echo "Postfix configured."
 
 # Function to check if a domain has a DNS record to avoid certbot failure
+echo "Verifying required DNS A/CNAME records before running Certbot..."
 check_dns() {
   local result=$(dig "$1" | awk '/^;; ANSWER SECTION:/{p=1; next} p{print; exit}')
   if [ -n "$result" ]; then
+    echo "Valid DNS record found for domain $1. Certbot will request a certificate."
     return 0  # Success, domain has a DNS record
   else
-    echo "Domain $1 does not have a DNS record. Skipping..."
+    echo "NO DNS RECORD FOUND for domain $1. Skipping..."
     return 1  # Failure, domain does not have a DNS record
   fi
 }
 
 # Add any other specified subdomains
 if [ -n "$CNAME" ]; then
-  # Append the main domain to each subdomain
+  # Append domain name to each subdomain hostname
   SUBDOMAINS=$(echo "$CNAME" | sed "s/\([^,]\+\)/\1.$DOMAIN/g")
 
-  # Check DNS for each subdomain before adding to the list
+  # Add any domains with valid DNS records to a list to be requested by Certbot
   VALID_SUBDOMAINS=""
   IFS=',' read -ra SUBDOMAINS_ARRAY <<< "$SUBDOMAINS"
   first=true
@@ -128,9 +137,8 @@ fi
 
 # Register all domains (main domain and subdomains)
 echo "Registering Let's Encrypt account under admin@$DOMAIN..."
-
-# Staging
-certbot certonly --nginx --staging --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAINS"
+certbot certonly --nginx --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAIN"
+certbot certonly --nginx --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAINS"
 
 # Certbot started nginx, stop it and let Supervisor manage nginx process
 service nginx stop
@@ -140,10 +148,7 @@ CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
 KEY_PATH="/etc/letsencrypt/live/$HOSTNAME/privkey.pem"
 
 # Update Dovecot configuration files with the cert and key paths
-
 echo "Updating Dovecot configuration with TLS certificates..."
-echo "Making backup of /etc/dovecot/conf.d/10-ssl.conf to /etc/dovecot/conf.d/10-ssl.bak"
-cp /etc/dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/10-ssl.bak
 
 echo "Setting ssl = required..."
 grep -q '^\s*#*\s*ssl =' /etc/dovecot/conf.d/10-ssl.conf && sed -i '/^\s*#*\s*ssl =/s/.*/ssl = required/' /etc/dovecot/conf.d/10-ssl.conf || echo 'ssl = required' >> /etc/dovecot/conf.d/10-ssl.conf
@@ -160,18 +165,25 @@ grep -q '^\s*#*\s*ssl_key =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\
 echo "Setting ssl_min_protocol = TLSv1.2..."
 grep -q '^\s*#*\s*ssl_min_protocol =' /etc/dovecot/conf.d/10-ssl.conf && sed -i "/^\s*#*\s*ssl_min_protocol =/s~.*~ssl_min_protocol = TLSv1.2~" /etc/dovecot/conf.d/10-ssl.conf || echo "ssl_min_protocol = TLSv1.2" >> /etc/dovecot/conf.d/10-ssl.conf
 
-# Update Postfix configuration files with the cert and key paths
+echo "Making backup of /etc/dovecot/conf.d/10-ssl.conf..."
+cp /etc/dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/10-ssl.bak
 
+# Update Postfix configuration files with the cert and key paths
 echo "Updating Postfix configuration with TLS certificates..."
 grep -q '^\s*#*\s*smtpd_tls_cert_file =' /etc/postfix/main.cf && sed -i "/^\s*#*\s*smtpd_tls_cert_file =/s~.*~smtpd_tls_cert_file = $CERT_PATH~" /etc/postfix/main.cf || echo "smtpd_tls_cert_file = $CERT_PATH" >> /etc/postfix/main.cf
 grep -q '^\s*#*\s*smtpd_tls_key_file =' /etc/postfix/main.cf && sed -i "/^\s*#*\s*smtpd_tls_key_file =/s~.*~smtpd_tls_key_file = $KEY_PATH~" /etc/postfix/main.cf || echo "smtpd_tls_key_file = $KEY_PATH" >> /etc/postfix/main.cf
+echo "Making backup of /etc/postfix/main.cf..."
+cp /etc/postfix/main.cf /etc/postfix/main.bak
 
 echo "Updating ssl configuration..."
 echo "Making backup of /etc/ssl/openssl.cnf..."
 cp /etc/ssl/openssl.cnf /etc/ssl/openssl.bak
 
-echo "Commenting out providers = provider_sect due to known issue..."
+# Commenting out providers = provider_sect due to known issue
 sed -i '/^\s*providers = provider_sect/s/^/#/' /etc/ssl/openssl.cnf
+
+# Make sure vmail user owns /var/mail
+chown -R vmail:vmail /var/mail
 
 # Start supervisord
 exec supervisord -c /etc/supervisord.conf
