@@ -27,6 +27,19 @@ echo "$DOMAIN" > /etc/mailname
 # Set hostname in /etc/postfix/main.cf
 grep -q '^\s*#*\s*myhostname =' /etc/postfix/main.cf && sed -i '/^\s*#*\s*myhostname =/s~.*~myhostname = '"$HOSTNAME~" /etc/postfix/main.cf || echo 'myhostname = '"$HOSTNAME" >> /etc/postfix/main.cf
 
+# Add /etc/dovecot/dovecot-sql.conf configuration
+echo "Configuring Dovecot for use with database..."
+echo "Writing to /etc/dovecot/dovecot-sql.conf..."
+touch /etc/dovecot/dovecot-sql.conf
+echo "driver = sqlite
+connect = $DATABASE_PATH
+
+password_query = SELECT password, crypt AS userdb_mail_crypt_save_version, \
+password AS userdb_mail_crypt_private_password, username, domain \
+FROM mailbox WHERE username = '%n';" > /etc/dovecot/dovecot-sql.conf
+
+echo "Dovecot configured."
+
 # Check if database exists, if not, create it
 if [ ! -f "$DATABASE_PATH" ]; then
     echo "Creating database..."
@@ -51,7 +64,7 @@ CREATE TABLE virtual_aliases (
 
 INSERT INTO virtual_domains (domain,aliases,mailboxes) VALUES ('$DOMAIN',0,0);
 
-INSERT INTO virtual_aliases (source,destination) VALUES ('admin@privatenode.xyz','test@privatenode.xyz');
+INSERT INTO virtual_aliases (source,destination) VALUES ('admin@$DOMAIN','test@$DOMAIN');
 EOF
 
     # Add test user
@@ -63,19 +76,6 @@ EOF
 else
     echo "Database already exists. Continuing..."
 fi
-
-# Add /etc/dovecot/dovecot-sql.conf configuration
-echo "Configuring Dovecot for use with database..."
-echo "Writing to /etc/dovecot/dovecot-sql.conf..."
-touch /etc/dovecot/dovecot-sql.conf
-echo "driver = sqlite
-connect = $DATABASE_PATH
-
-password_query = SELECT password, crypt AS userdb_mail_crypt_save_version, \
-password AS userdb_mail_crypt_private_password, username, domain \
-FROM mailbox WHERE username = '%n';" > /etc/dovecot/dovecot-sql.conf
-
-echo "Dovecot configured."
 
 # Create or overwrite /etc/postfix/sqlite_virtual_domains_maps.cf
 echo "Configuring Postfix for use with database..."
