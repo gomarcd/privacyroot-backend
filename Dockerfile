@@ -3,35 +3,25 @@ FROM ubuntu:latest
 # Update package lists and install required packages
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    postfix postfix-sqlite \
-    dovecot-core \
-    dovecot-lmtpd \
-    dovecot-imapd \
-    dovecot-pop3d \
-    dovecot-sqlite \
-    supervisor \
-    sqlite3 \
-    nginx \
-    certbot python3-certbot-nginx python3-gpg dnsutils nano argon2 rsyslog
+    postfix postfix-sqlite sqlite3 \
+    dovecot-core dovecot-lmtpd dovecot-imapd dovecot-pop3d dovecot-sqlite \
+    nginx certbot python3-certbot-nginx \
+    python3-gpg dnsutils nano argon2 rsyslog supervisor
 
 # Set users/groups
 RUN groupadd -g 5000 vmail
 RUN usermod -aG vmail dovecot
 RUN useradd -u 5000 -g 5000 -G mail -d /var/mail -m vmail
-RUN chown -R vmail:vmail /var/mail
 
 # Set environment variables
 ENV DATABASE_PATH=/var/mail/mailserver.db
 
 # Copy admin script
 COPY proot.sh /usr/local/bin/proot
-RUN chmod +x /usr/local/bin/proot
 
-# Copy postfix-wkd script
+# Copy postfix-wkd script, set gpg config
 COPY postfix-wkd.py /var/mail/postfix-wkd.py
-RUN chmod +x /var/mail/postfix-wkd.py
 RUN mkdir /var/mail/.gnupg && echo "auto-key-locate local,wkd" > /var/mail/.gnupg/gpg.conf
-RUN chown -R vmail:vmail /var/mail
 
 # Copy configuration files
 COPY supervisord.conf /etc/supervisord.conf
@@ -48,21 +38,22 @@ COPY postfix/master.cf /etc/postfix/master.cf
 # Configure Postfix to use Maildir
 RUN postconf -e 'home_mailbox = /var/mail/Maildir/'
 
-# Set permissions
-RUN chmod 644 \
-    /etc/postfix/master.cf \
-    /etc/postfix/main.cf
-
 # Create log file
-RUN touch /var/log/mail.log && chmod a+w /var/log/mail*
-
-EXPOSE 80 443 587 465 143 993 110 995 25
+RUN touch /var/log/mail.log
 
 # Copy the entrypoint script
 COPY entrypoint.sh /entrypoint.sh
 
-# Set the entrypoint script as executable
-RUN chmod +x /entrypoint.sh
+# Set permissions
+RUN chmod +x /usr/local/bin/proot /var/mail/postfix-wkd.py /entrypoint.sh && \
+    chmod a+w /var/log/mail* && \
+    chmod 644 /etc/postfix/master.cf /etc/postfix/main.cf && \
+    chown -R vmail:vmail /var/mail
+
+EXPOSE 80 443 587 465 143 993 110 995 25
+
+# Fix supervisor error "rsyslogd: imklog: cannot open kernel log (/proc/kmsg): Operation not permitted."
+RUN sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
 
 # Set the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
