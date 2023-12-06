@@ -12,6 +12,7 @@ RUN apt-get update && \
 RUN groupadd -g 5000 vmail
 RUN usermod -aG vmail dovecot
 RUN useradd -u 5000 -g 5000 -G mail -d /var/mail -m vmail
+RUN gpasswd -a postfix opendkim
 
 # Set environment variables
 ENV DATABASE_PATH=/var/mail/mailserver.db
@@ -33,6 +34,7 @@ COPY dovecot/conf.d/auth-sql.conf.ext /etc/dovecot/conf.d/auth-sql.conf.ext
 COPY dovecot/dovecot.conf /etc/dovecot/dovecot.conf
 COPY postfix/main.cf /etc/postfix/main.cf
 COPY postfix/master.cf /etc/postfix/master.cf
+COPY opendkim/opendkim.conf /etc/opendkim.conf
 
 # Configure Postfix to use Maildir
 RUN postconf -e 'home_mailbox = /var/mail/Maildir/'
