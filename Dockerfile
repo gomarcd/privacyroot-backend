@@ -3,7 +3,7 @@ FROM ubuntu:latest
 # Update package lists and install required packages
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    postfix postfix-sqlite sqlite3 \
+    postfix postfix-sqlite sqlite3 opendkim opendkim-tools \
     dovecot-core dovecot-lmtpd dovecot-imapd dovecot-pop3d dovecot-sqlite \
     nginx certbot python3-certbot-nginx \
     python3-gpg dnsutils nano argon2 rsyslog supervisor
@@ -16,12 +16,11 @@ RUN useradd -u 5000 -g 5000 -G mail -d /var/mail -m vmail
 # Set environment variables
 ENV DATABASE_PATH=/var/mail/mailserver.db
 
-# Copy admin script
+# Copy scripts
 COPY proot.sh /usr/local/bin/proot
-
-# Copy postfix-wkd script, set gpg config
 COPY postfix-wkd.py /var/mail/postfix-wkd.py
 RUN mkdir /var/mail/.gnupg && echo "auto-key-locate local,wkd" > /var/mail/.gnupg/gpg.conf
+COPY opendkim.sh opendkim.sh
 
 # Copy configuration files
 COPY supervisord.conf /etc/supervisord.conf

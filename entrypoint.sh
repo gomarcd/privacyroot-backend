@@ -221,5 +221,8 @@ sed -i '/^\s*providers = provider_sect/s/^/#/' /etc/ssl/openssl.cnf
 # Make sure vmail user owns /var/mail
 chown -R vmail:vmail /var/mail
 
+# Set up OpenDKIM
+source opendkim.sh
+
 # Start supervisord
 exec supervisord -c /etc/supervisord.conf
