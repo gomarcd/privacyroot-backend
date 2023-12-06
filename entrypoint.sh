@@ -140,12 +140,48 @@ echo "Registering Let's Encrypt account under admin@$DOMAIN..."
 certbot certonly --nginx --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAIN"
 certbot certonly --nginx --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAINS"
 
-# Certbot started nginx, stop it and let Supervisor manage nginx process
-service nginx stop
-
 # Reference the certificate and private key paths
 CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
 KEY_PATH="/etc/letsencrypt/live/$HOSTNAME/privkey.pem"
+
+# Creat nginx conf if it doesn't exist
+NGINX_CONF="/etc/nginx/conf.d/$DOMAIN.conf"
+if [ ! -f "$NGINX_CONF" ]; then
+    echo "Creating nginx configuration..."
+    touch $NGINX_CONF
+    cat <<EOF > "$NGINX_CONF"
+server {
+    listen 80;
+    server_name $DOMAIN;
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name $DOMAIN;
+    ssl_certificate $CERT_PATH;
+    ssl_certificate_key $KEY_PATH;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384';
+
+    location /.well-known/openpgpkey/ {
+        default_type application/octet-stream;
+        add_header Access-Control-Allow-Origin *;
+        root /var/www/$DOMAIN;
+        try_files \$uri \$uri/ =404;
+    }
+}
+EOF
+else
+    echo "nginx configuration already exists. Continuing..."
+fi
+
+# Create WKD directory structure
+mkdir -p /var/www/$DOMAIN/.well-known/openpgpkey/hu
+touch /var/www/$DOMAIN/.well-known/openpgpkey/policy
+
+# Certbot started nginx, stop it and let Supervisor manage nginx process
+service nginx stop
 
 # Update Dovecot configuration files with the cert and key paths
 echo "Updating Dovecot configuration with TLS certificates..."
