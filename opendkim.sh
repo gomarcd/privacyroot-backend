@@ -41,6 +41,7 @@ fi
 
 # Create opendkim postfix spool dir if it doesn't exist
 if [ ! -d "/var/spool/postfix/opendkim" ]; then
+	echo "Creating /var/spool/postfix/opendkim..."
 	mkdir /var/spool/postfix/opendkim
 else
 	echo "/var/spool/postfix/opendkim already exists, skipping..."
@@ -48,8 +49,8 @@ fi
 
 # Create /etc/default/opendkim if it doesn't exist
 if [ ! -f "/etc/default/opendkim" ]; then
+	echo "Creating /etc/default/opendkim..."
 	touch /etc/default/opendkim
-
 	cat <<EOF >> /etc/default/opendkim
 SOCKET="local:/var/spool/postfix/opendkim/opendkim.sock"
 EOF
