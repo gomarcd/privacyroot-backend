@@ -35,6 +35,7 @@ COPY dovecot/dovecot.conf /etc/dovecot/dovecot.conf
 COPY postfix/main.cf /etc/postfix/main.cf
 COPY postfix/master.cf /etc/postfix/master.cf
 COPY opendkim/opendkim.conf /etc/opendkim.conf
+COPY opendkim/default /etc/default/opendkim
 
 # Configure Postfix to use Maildir
 RUN postconf -e 'home_mailbox = /var/mail/Maildir/'
