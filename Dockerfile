@@ -18,6 +18,7 @@ RUN gpasswd -a postfix opendkim
 ENV DATABASE_PATH=/var/mail/mailserver.db
 
 # Copy scripts
+COPY scripts/entrypoint.sh /entrypoint.sh
 COPY scripts/proot.sh /usr/local/bin/proot
 COPY scripts/postfix-wkd.py /var/mail/postfix-wkd.py
 RUN mkdir /var/mail/.gnupg && echo "auto-key-locate local,wkd" > /var/mail/.gnupg/gpg.conf
@@ -43,9 +44,6 @@ RUN postconf -e 'home_mailbox = /var/mail/Maildir/'
 
 # Create log file
 RUN touch /var/log/mail.log
-
-# Copy the entrypoint script
-COPY entrypoint.sh /entrypoint.sh
 
 # Set permissions
 RUN chmod +x /usr/local/bin/proot /var/mail/postfix-wkd.py /entrypoint.sh && \
