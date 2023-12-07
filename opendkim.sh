@@ -47,17 +47,6 @@ else
 	echo "/var/spool/postfix/opendkim already exists, skipping..."
 fi
 
-# Create /etc/default/opendkim if it doesn't exist
-if [ ! -f "/etc/default/opendkim" ]; then
-	echo "Creating /etc/default/opendkim..."
-	touch /etc/default/opendkim
-	cat <<EOF >> /etc/default/opendkim
-SOCKET="local:/var/spool/postfix/opendkim/opendkim.sock"
-EOF
-else
-	echo "/etc/default/opendkim already exists, skipping..."
-fi
-
 # Create DKIM keypair if it doesn't already exist
 if [ ! -d "$DKIM_PATH" ]; then
 	echo "Generating keypair..."
