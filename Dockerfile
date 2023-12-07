@@ -57,5 +57,8 @@ EXPOSE 80 443 587 465 143 993 110 995 25
 # Fix supervisor error "rsyslogd: imklog: cannot open kernel log (/proc/kmsg): Operation not permitted."
 RUN sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
 
+# Certbot renewal cron task
+RUN SLEEPTIME=$(awk 'BEGIN{srand(); print int(rand()*(3600+1))}'); echo "0 0,12 * * * root sleep $SLEEPTIME && certbot renew -q" | tee -a /etc/crontab > /dev/null
+
 # Set the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
