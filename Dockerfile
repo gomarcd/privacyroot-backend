@@ -18,10 +18,11 @@ RUN gpasswd -a postfix opendkim
 ENV DATABASE_PATH=/var/mail/mailserver.db
 
 # Copy scripts
-COPY proot.sh /usr/local/bin/proot
-COPY postfix-wkd.py /var/mail/postfix-wkd.py
+COPY scripts/proot.sh /usr/local/bin/proot
+COPY scripts/postfix-wkd.py /var/mail/postfix-wkd.py
 RUN mkdir /var/mail/.gnupg && echo "auto-key-locate local,wkd" > /var/mail/.gnupg/gpg.conf
-COPY opendkim.sh opendkim.sh
+COPY scripts/opendkim.sh opendkim.sh
+COPY scripts/nginx.sh nginx.sh
 
 # Copy configuration files
 COPY supervisord.conf /etc/supervisord.conf

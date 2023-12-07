@@ -144,37 +144,23 @@ certbot certonly --nginx --non-interactive --expand --agree-tos --email admin@$D
 CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
 KEY_PATH="/etc/letsencrypt/live/$HOSTNAME/privkey.pem"
 
-# Creat nginx conf if it doesn't exist
-NGINX_CONF="/etc/nginx/conf.d/$DOMAIN.conf"
-if [ ! -f "$NGINX_CONF" ]; then
-    echo "Creating nginx configuration..."
-    touch $NGINX_CONF
-    cat <<EOF > "$NGINX_CONF"
-server {
-    listen 80;
-    server_name $DOMAIN;
-    return 301 https://\$host\$request_uri;
-}
-
-server {
-    listen 443 ssl;
-    server_name $DOMAIN;
-    ssl_certificate $CERT_PATH;
-    ssl_certificate_key $KEY_PATH;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers 'TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384';
-
-    location /.well-known/openpgpkey/ {
-        default_type application/octet-stream;
-        add_header Access-Control-Allow-Origin *;
-        root /var/www/$DOMAIN;
-        try_files \$uri \$uri/ =404;
-    }
-}
+# Set MTA-STS policy
+if [ ! -f "/var/www/mta-sts.$DOMAIN/.well-known/mta-sts.txt" ]; then
+    echo "Setting MTA-STS policy..."
+    mkdir -p /var/www/mta-sts.$DOMAIN/.well-known
+    touch /var/www/mta-sts.$DOMAIN/.well-known/mta-sts.txt
+    tee /var/www/mta-sts.$DOMAIN/.well-known/mta-sts.txt <<EOF
+version: STSv1
+mode: enforce
+mx: $HOSTNAME
+max_age: 86400
 EOF
 else
-    echo "nginx configuration already exists. Continuing..."
+  echo "MTA-STS policy already exists: /var/www/mta-sts.$DOMAIN/.well-known/mta-sts.txt"
 fi
+
+# Set up nginx confs
+source nginx.sh
 
 # Create WKD directory structure
 mkdir -p /var/www/$DOMAIN/.well-known/openpgpkey/hu
