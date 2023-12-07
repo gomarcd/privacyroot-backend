@@ -5,19 +5,14 @@ services:
     image: gomarcd/privacyroot:latest
     container_name: privacyroot
     hostname: mail.privatenode.xyz
-    # If you don't want to use host mode, comment it out and uncomment out and adjust ports
     network_mode: host
-    #ports:
-    #  - 80:80
-    #  - 443:443
-    #  - 587:587
-    #  - 465:465
-    #  - 143:143
-    #  - 993:993
-    #  - 110:110
-    #  - 995:995
-    #  - 25:25
     restart: always
     environment:
       - DOMAIN=privatenode.xyz
       - CNAME=imap,imaps,smtp,smtps,pop3,pop3s
+    volumes:
+      - ./etc/letsencrypt:/etc/letsencrypt
+      - ./etc/nginx:/etc/nginx
+      - ./var/mail:/var/mail
+      - ./var/www/privatenode.xyz:/var/www/privatenode.xyz
+      - ./etc/opendkim:/etc/opendkim
