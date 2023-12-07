@@ -138,7 +138,7 @@ fi
 # Register all domains (main domain and subdomains)
 echo "Registering Let's Encrypt account under admin@$DOMAIN..."
 certbot certonly --nginx --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAIN"
-certbot certonly --nginx --non-interactive --agree-tos --email admin@$DOMAIN -d "$DOMAINS"
+certbot certonly --nginx --non-interactive --expand --agree-tos --email admin@$DOMAIN -d "$DOMAINS"
 
 # Reference the certificate and private key paths
 CERT_PATH="/etc/letsencrypt/live/$HOSTNAME/fullchain.pem"
