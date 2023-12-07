@@ -224,5 +224,6 @@ chown -R vmail:vmail /var/mail
 # Set up OpenDKIM
 source opendkim.sh
 
-# Start supervisord
+# Remove any dangling rsyslogd PID then start supervisord
+rm -f /run/rsyslogd.pid
 exec supervisord -c /etc/supervisord.conf
