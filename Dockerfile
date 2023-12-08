@@ -3,7 +3,7 @@ FROM ubuntu:latest
 # Update package lists and install required packages
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    postfix postfix-sqlite sqlite3 opendkim opendkim-tools \
+    postfix postfix-sqlite sqlite3 opendkim opendkim-tools unbound \
     dovecot-core dovecot-lmtpd dovecot-imapd dovecot-pop3d dovecot-sqlite \
     nginx certbot python3-certbot-nginx \
     python3-gpg dnsutils nano argon2 rsyslog supervisor
@@ -38,18 +38,21 @@ COPY postfix/main.cf /etc/postfix/main.cf
 COPY postfix/master.cf /etc/postfix/master.cf
 COPY opendkim/opendkim.conf /etc/opendkim.conf
 COPY opendkim/default /etc/default/opendkim
+COPY unbound.conf /etc/unbound/unbound.conf
 
 # Configure Postfix to use Maildir
 RUN postconf -e 'home_mailbox = /var/mail/Maildir/'
 
 # Create log file
 RUN touch /var/log/mail.log
+RUN touch /var/log/unbound.log
 
 # Set permissions
 RUN chmod +x /usr/local/bin/proot /var/mail/postfix-wkd.py /entrypoint.sh && \
     chmod a+w /var/log/mail* && \
     chmod 644 /etc/postfix/master.cf /etc/postfix/main.cf && \
-    chown -R vmail:vmail /var/mail
+    chown -R vmail:vmail /var/mail && \
+    chown unbound:unbound /var/log/unbound.log
 
 EXPOSE 80 443 587 465 143 993 110 995 25
 

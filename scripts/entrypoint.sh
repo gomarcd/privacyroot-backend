@@ -18,6 +18,13 @@ echo "Database path is: $DATABASE_PATH"
 echo "Hostname set to: $HOSTNAME"
 echo "Domain set to: $DOMAIN"
 
+# Start Unbound
+echo "Starting Unbound..."
+service unbound start > /dev/null
+
+# Set resolv.conf
+echo "nameserver 127.0.0.1" | tee /etc/resolv.conf > /dev/null
+
 # Ensure Postfix has the needed DNS config
 cp /etc/resolv.conf /var/spool/postfix/etc/
 
