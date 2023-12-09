@@ -7,12 +7,16 @@ readme_directory = no
 
 compatibility_level = 3.6
 
+smtp_dns_support_level=dnssec
+smtp_host_lookup=dns
+smtp_tls_security_level = dane
+smtp_tls_loglevel=1
+
 smtpd_tls_cert_file = 
 smtpd_tls_key_file = 
 smtpd_tls_security_level = may
 
 smtp_tls_CApath=/etc/ssl/certs
-smtp_tls_security_level = may
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
 smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
@@ -40,3 +44,9 @@ smtpd_sasl_auth_enable = yes
 broken_sasl_auth_clients = yes
 virtual_transport = lmtp:unix:private/dovecot-lmtp
 smtputf8_enable = no
+
+# Milter configuration
+milter_default_action = accept
+milter_protocol = 6
+smtpd_milters = local:opendkim/opendkim.sock
+non_smtpd_milters = $smtpd_milters
