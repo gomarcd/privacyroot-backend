@@ -12,23 +12,21 @@ smtp_host_lookup=dns
 smtp_tls_security_level = dane
 smtp_tls_loglevel=1
 
-smtpd_tls_cert_file = 
-smtpd_tls_key_file = 
+smtpd_tls_cert_file = /etc/letsencrypt/live/mail.privatenode.xyz/fullchain.pem
+smtpd_tls_key_file = /etc/letsencrypt/live/mail.privatenode.xyz/privkey.pem
 smtpd_tls_security_level = may
 
 smtp_tls_CApath=/etc/ssl/certs
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
-smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination
-smtpd_sender_restrictions = reject_unknown_sender_domain
-smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination reject_unknown_sender_domain reject_non_fqdn_sender
-myhostname =
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+myhostname = mail.privatenode.xyz
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 myorigin = /etc/mailname
 mydestination = 
 relayhost = 
-mynetworks = 172.0.0.0/8
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
 mailbox_size_limit = 0
 recipient_delimiter = +
 inet_interfaces = all
