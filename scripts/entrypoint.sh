@@ -217,6 +217,11 @@ chown -R vmail:vmail /var/mail
 # Set up OpenDKIM
 source opendkim.sh
 
+# Install fail2ban and iptables if enabled in docker-compose.yml
+if [ "$ENABLE_FAIL2BAN" == "yes" ]; then
+    source fail2ban.sh
+fi
+
 # Remove any dangling rsyslogd PID then start supervisord
 rm -f /run/rsyslogd.pid
 exec supervisord -c /etc/supervisord.conf
