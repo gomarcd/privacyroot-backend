@@ -4,7 +4,8 @@ apt-get install -y fail2ban iptables
 touch /var/log/ssh.log
 touch /var/log/mail.log
 
-JAIL_LOCAL_CONF="[DEFAULT]
+cat <<EOL > /etc/fail2ban/jail.local
+[DEFAULT]
 banaction = iptables-allports
 
 [sshd]
@@ -22,15 +23,15 @@ filter   = postfix-sasl
 logpath  = /var/log/mail.log
 maxretry = 5
 ignoreip = 127.0.0.1/8 172.0.0.0/8
-bantime  = 604800 # ban for 7 days"
+bantime  = 604800 # ban for 7 days
+EOL
 
-POSTFIX_SASL_CONF="[INCLUDES]
+cat <<EOL > /etc/fail2ban/filter.d/postfix-sasl.conf
+[INCLUDES]
 before = common.conf
 [Definition]
 _daemon = postfix/smtpd
-failregex = .*\[<ADDR>\].*authentication failed"
-
-echo $JAIL_LOCAL_CONF > /etc/fail2ban/jail.local
-echo $POSTFIX_SASL_CONF > /etc/fail2ban/filter.d/postfix-sasl.conf
+failregex = .*\[<ADDR>\].*authentication failed
+EOL
 
 service fail2ban force-reload
