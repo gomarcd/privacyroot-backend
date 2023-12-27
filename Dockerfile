@@ -25,6 +25,7 @@ RUN mkdir /var/mail/.gnupg && echo "auto-key-locate local,wkd" > /var/mail/.gnup
 COPY scripts/opendkim.sh opendkim.sh
 COPY scripts/nginx.sh nginx.sh
 COPY scripts/fail2ban.sh fail2ban.sh
+COPY scripts/timezone.sh timezone.sh
 
 # Copy configuration files
 COPY supervisord.conf /etc/supervisord.conf

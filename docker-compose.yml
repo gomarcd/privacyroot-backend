@@ -29,6 +29,8 @@ services:
     #  - ENABLE_FAIL2BAN=yes
       - DOMAIN=privatenode.xyz
       - CNAME=imap,imaps,smtp,smtps,pop3,pop3s
+    # UTC is used by default, uncomment to override
+    #  - TIMEZONE=Asia/Manila
     volumes:
       - ./etc/letsencrypt:/etc/letsencrypt
     #  - ./etc/nginx:/etc/nginx

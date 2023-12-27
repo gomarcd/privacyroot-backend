@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Set timezone
+source timezone.sh
+
 # Read hostname from Docker -h option and domain/cname from -e flags
 HOSTNAME=$(hostname)
 DOMAIN=$DOMAIN
