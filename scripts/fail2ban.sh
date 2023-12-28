@@ -30,8 +30,8 @@ cat <<EOL > /etc/fail2ban/filter.d/postfix-sasl.conf
 [INCLUDES]
 before = common.conf
 [Definition]
-_daemon = postfix/smtpd
-failregex = .*\[<ADDR>\].*authentication failed
+_daemon = (?:postfix/smtp(d|s){1,2}|postfix/submission/smtp(d|s){1,2})
+failregex = ^%(__prefix_line)swarning: [-._\w]+\[<HOST>\]: SASL ((?i)LOGIN|PLAIN|(?:CRAM|DIGEST)-MD5) authentication failed:?(\s?[A-Za-z0-9+/:]*={0,4})?\s*$
 EOL
 
 service fail2ban force-reload
