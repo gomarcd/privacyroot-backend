@@ -20,7 +20,10 @@ smtp_tls_CApath=/etc/ssl/certs
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
 smtpd_helo_required = yes
-smtpd_helo_restrictions = reject_invalid_helo_hostname reject_unknown_helo_hostname reject_non_fqdn_helo_hostname reject_non_fqdn_helo_hostname
+
+# helo restrictions appear to interfere with normal mail for some users
+#smtpd_helo_restrictions = reject_invalid_helo_hostname reject_unknown_helo_hostname reject_non_fqdn_helo_hostname reject_non_fqdn_helo_hostname
+
 smtpd_relay_restrictions = permit_sasl_authenticated reject_unauth_destination
 smtpd_client_restrictions = permit_sasl_authenticated reject_unauth_pipelining reject_unauth_destination
 smtpd_sender_restrictions = permit_sasl_authenticated reject_unauthenticated_sender_login_mismatch
