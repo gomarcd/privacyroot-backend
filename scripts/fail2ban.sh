@@ -34,4 +34,7 @@ _daemon = (?:postfix/smtp(d|s){1,2}|postfix/submission/smtp(d|s){1,2})
 failregex = ^%(__prefix_line)swarning: [-._\w]+\[<HOST>\]: SASL ((?i)LOGIN|PLAIN|(?:CRAM|DIGEST)-MD5) authentication failed:?(\s?[A-Za-z0-9+/:]*={0,4})?\s*$
 EOL
 
+# Remove fail2ban socket to avoid timezone discrepancy failure
+rm -f /var/run/fail2ban/fail2ban.sock
+
 service fail2ban force-reload

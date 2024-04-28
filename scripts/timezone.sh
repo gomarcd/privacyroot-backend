@@ -1,6 +1,3 @@
-# Remove fail2ban socket to avoid timezone discrepancy failure
-rm /var/run/fail2ban/fail2ban.sock
-
 # Check if the TIMEZONE environment variable is set in Docker
 if [ -n "$TIMEZONE" ]; then
     # Use the provided timezone
