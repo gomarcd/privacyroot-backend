@@ -19,6 +19,3 @@ if [ -f "/usr/share/zoneinfo/$TZ" ]; then
 else
     echo "Error: Timezone $TZ not found"
 fi
-
-# Restart fail2ban
-service fail2ban force-reload
