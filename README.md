@@ -17,7 +17,11 @@ Proton Mail revolutionized email by bridging a gap between privacy and convenien
 Privacyroot improves on the interoperability. Any mail sent between Proton and Privacyroot - or any other WKD enabled provider - will be PGP encrypted by default.
 
 :white_check_mark: Automatic outbound PGP encryption when [WKD](https://wiki.gnupg.org/WKD?ref=uriports.com#Implementations) discovery finds a key
+
 :white_check_mark: Automatically encrypt inbound mail with user PGP pubkey
+
 :white_check_mark: Password-derived mailbox encryption at rest with Dovecot
+
 :white_check_mark: Autodiscovery/autoconfiguration
+
 :white_check_mark: CLI admin script
